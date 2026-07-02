@@ -50,6 +50,7 @@ module "eks" {
   node_min_size       = var.node_min_size
   node_max_size       = var.node_max_size
   devship_role_arn    = var.devship_role_arn
+  cloud_engineer_principal_arn = var.cloud_engineer_principal_arn
 }
 
 provider "aws" {

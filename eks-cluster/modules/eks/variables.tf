@@ -8,3 +8,4 @@ variable "node_desired_size" { type = number }
 variable "node_min_size" { type = number }
 variable "node_max_size" { type = number }
 variable "devship_role_arn" { type = string }
+variable "cloud_engineer_principal_arn" { type = string }

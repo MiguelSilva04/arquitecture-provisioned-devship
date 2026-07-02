@@ -66,3 +66,7 @@ variable "tags" {
 variable "devship_role_arn" {
   type = string
 }
+
+variable "cloud_engineer_principal_arn" {
+  type = string
+}
