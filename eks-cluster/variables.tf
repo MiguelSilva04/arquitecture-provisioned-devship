@@ -32,7 +32,7 @@ variable "cluster_version" {
 
 variable "ecr_repositories" {
   type    = list(string)
-  default = ["devship-test-repository"]
+  default = ["devship-test-repository", "devship-demo-backend", "devship-demo-frontend"]
 }
 
 variable "node_instance_types" {
