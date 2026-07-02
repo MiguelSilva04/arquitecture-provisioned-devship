@@ -28,6 +28,7 @@ provider "kubectl" {
 }
 
 resource "kubernetes_namespace" "argocd" {
+  depends_on = [module.eks]
   metadata {
     name = "argocd"
   }
@@ -35,7 +36,7 @@ resource "kubernetes_namespace" "argocd" {
 
 resource "kubernetes_namespace" "apps" {
   for_each = toset(["dev", "staging", "prod"])
-
+  depends_on = [module.eks]
   metadata {
     name = each.value
   }
