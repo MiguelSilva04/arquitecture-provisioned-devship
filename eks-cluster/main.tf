@@ -4,8 +4,23 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.33"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.16"
+    }
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.14"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.12"
+    }
   }
-
   #  backend "s3" {
   #    bucket       = "workshop-march-terraform-state-bucket-090172996063"
   #    key          = "eks-cluster/terraform.tfstate"
