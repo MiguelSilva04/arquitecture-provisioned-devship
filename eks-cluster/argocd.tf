@@ -70,6 +70,15 @@ resource "helm_release" "argocd" {
   namespace  = kubernetes_namespace.argocd.metadata[0].name
 }
 
+resource "helm_release" "metrics_server" {
+  depends_on = [module.eks]
+  name       = "metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  namespace  = "kube-system"
+  set { name = "args[0]"; value = "--kubelet-insecure-tls" }
+}
+
 resource "time_sleep" "wait_for_argocd_crds" {
   depends_on      = [helm_release.argocd]
   create_duration = "30s"
