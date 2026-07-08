@@ -122,6 +122,40 @@ resource "kubernetes_cluster_role_binding" "devship_argocd_reader" {
   }
 }
 
+resource "kubernetes_cluster_role" "metrics_reader" {
+  depends_on = [helm_release.metrics_server]
+  metadata {
+    name = "devship-metrics-reader"
+  }
+  rule {
+    # AmazonEKSViewPolicy (associada a este principal em eks.access-entry.tf) não cobre
+    # a aggregated API metrics.k8s.io — é um APIService à parte, não um recurso "core".
+    # Sem isto, GET /application-environments/{id}/pods no backend consegue listar pods
+    # mas pod_metrics() falha com 403 ao tentar ler CPU/memória.
+    api_groups = ["metrics.k8s.io"]
+    resources  = ["pods"]
+    verbs      = ["get", "list"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "devship_metrics_reader" {
+  metadata {
+    name = "devship-metrics-reader-binding"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.metrics_reader.metadata[0].name
+  }
+  subject {
+    kind = "User"
+    # Mesmo principal/session-name que devship_argocd_reader — ver comentário lá para
+    # a explicação de porque é o "assumed-role" e não o ARN da IAM role em si.
+    name      = "arn:aws:sts::306667525254:assumed-role/AccessPlatformDevShip/SessionValidDevShip"
+    api_group = "rbac.authorization.k8s.io"
+  }
+}
+
 data "http" "argocd_apps" {
   for_each = toset(["dev", "staging", "prod"])
   url      = "https://raw.githubusercontent.com/MiguelSilva04/devship-gitops/principal/apps/argocd-applications/${each.value}-application.yaml"
