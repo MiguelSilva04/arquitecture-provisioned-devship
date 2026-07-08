@@ -63,6 +63,8 @@ resource "kubernetes_secret" "ecr" {
   }
 }
 
+
+
 resource "helm_release" "argocd" {
   name       = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
@@ -86,6 +88,38 @@ resource "helm_release" "metrics_server" {
 resource "time_sleep" "wait_for_argocd_crds" {
   depends_on      = [helm_release.argocd]
   create_duration = "30s"
+}
+
+resource "kubernetes_cluster_role" "argocd_reader" {
+  depends_on = [time_sleep.wait_for_argocd_crds]
+  metadata {
+    name = "argocd-application-reader"
+  }
+  rule {
+    api_groups = ["argoproj.io"]
+    resources  = ["applications"]
+    verbs      = ["get", "list"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "devship_argocd_reader" {
+  metadata {
+    name = "devship-argocd-reader-binding"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.argocd_reader.metadata[0].name
+  }
+  subject {
+    kind = "User"
+    # O EKS Access Entry autentica sessões assumidas com o utilizador Kubernetes
+    # "arn:aws:sts::<account>:assumed-role/<role>/<session-name>", não o ARN da role IAM
+    # em si (aws eks describe-access-entry mostra isto no campo "username"). O nome de
+    # sessão é fixo no backend (aws_auth.py: RoleSessionName="SessionValidDevShip").
+    name      = "arn:aws:sts::306667525254:assumed-role/AccessPlatformDevShip/SessionValidDevShip"
+    api_group = "rbac.authorization.k8s.io"
+  }
 }
 
 data "http" "argocd_apps" {
