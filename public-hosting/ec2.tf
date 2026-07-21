@@ -40,6 +40,11 @@ resource "aws_instance" "platform" {
   EOF
 
   tags = { Name = "devship-platform" }
+
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+  }
 }
 
 resource "aws_eip" "platform" {
